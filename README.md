@@ -38,22 +38,22 @@ BIM INTERNET SERVICES is a comprehensive platform for managing MikroTik routers 
    source env/bin/activate  # Linux / macOS
    env\Scripts\activate     # Windows
 
-4. Install dependencies:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    Configure your environment variables in a .env file (do not commit .env):
 
-5 Configure your environment variables in a .env file (do not commit .env):
+4 Configure your environment variables in a .env file (do not commit .env):
    ```bash
    SECRET_KEY=your-secret-key
    DATABASE_URL=your-database-url
    
-6. Run migrations and start the development server:
+5. Run migrations and start the development server:
    ```bash
    python manage.py migrate
    python manage.py runserver
 
-7. Contributing
+6. Contributing
    Contributions are welcome! Please open an issue or submit a pull request.
 
 
