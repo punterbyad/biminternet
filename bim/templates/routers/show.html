@@ -1,0 +1,148 @@
+{% extends 'app.html' %}
+
+{% block title %}Router Details{% endblock %}
+
+{% block content %}
+
+<div class="container-xxl flex-grow-1 container-p-y d-flex justify-content-center align-items-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-white text-center">
+                <div class="page-info">
+                    <h4>Router Details</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5 class="text-muted">Router Name:</h5>
+                    <p class="text-dark">{{ router.name }}</p>
+                </div>
+                <div class="mb-3">
+                    <h5 class="text-muted">Router Location:</h5>
+                    <p class="text-dark">{{ router.location }}</p>
+                </div>
+                <div class="mb-3">
+                    <h5 class="text-muted">Router Type:</h5>
+                    <p class="text-dark">{{ router.type }}</p>
+                </div>
+                <div class="mb-3">
+                    <h5 class="text-muted">Router IP Address:</h5>
+                    <p class="text-dark">{{ router.ip_address }}</p>
+                </div>
+                <div class="mb-3">
+                    <h5 class="text-muted">Router Username:</h5>
+                    <p class="text-dark">{{ router.router_user }}</p>
+                </div>
+                {% if live %}
+                <hr>
+                <div class="mb-3">
+                    <h5 class="text-muted">Live System Resource:</h5>
+                    <ul class="list-unstyled small text-dark">
+                        {% with sys=live.system.0 %}
+                            {% if sys %}
+                                <li><strong>Uptime:</strong> {{ sys.uptime }}</li>
+                                <li><strong>Version:</strong> {{ sys.version }}</li>
+                                    <li><strong>Free memory:</strong> {{ sys.free_memory_mb }} MB</li>
+                                    <li><strong>Total memory:</strong> {{ sys.total_memory_mb }} MB</li>
+                                    <li><strong>CPU load:</strong> {{ sys.cpu_load }}%</li>
+                                <li><strong>Platform:</strong> {{ sys.platform }}</li>
+                            {% else %}
+                                <li>No system resource data available.</li>
+                            {% endif %}
+                        {% endwith %}
+                    </ul>
+                </div>
+                    {# Interfaces removed as requested - only show system resource #}
+                {% elif live_error %}
+                <div class="alert alert-warning">Could not fetch live data: {{ live_error }}</div>
+                {% endif %}
+
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'routers.index' %}" class="btn btn-secondary">Back</a>
+                <button type="button" class="btn btn-info" id="testConnectionBtn">Test Connection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a hidden form so we can read a CSRF token for AJAX requests -->
+<form id="csrfHelper" style="display:none;">
+    {% csrf_token %}
+</form>
+
+<script>
+    document.getElementById('testConnectionBtn').addEventListener('click', function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerText = 'Testing...';
+        // read CSRF token from hidden form, fallback to cookie
+        let csrftoken = null;
+        const tokenField = document.querySelector('#csrfHelper [name=csrfmiddlewaretoken]');
+        if (tokenField) csrftoken = tokenField.value;
+        if (!csrftoken) {
+            // fallback: read cookie
+            const match = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
+            if (match) csrftoken = match.pop();
+        }
+
+        fetch("{% url 'routers.connect' router_id=router.id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({})
+        }).then(r => r.json().then(j => ({status: r.status, body: j}))).then(({status, body}) => {
+            const liveContainer = document.getElementById('liveData');
+            if (status >= 200 && status < 300) {
+                const msg = body.message || 'Connected';
+                const box = document.createElement('div');
+                box.className = 'alert alert-success';
+                box.innerText = msg;
+                document.querySelector('.card-body').prepend(box);
+                    if (body.system && body.system.length) {
+                    const sys = body.system[0];
+                    // prefer MB fields provided by server-side normalization
+                    const freeMB = (sys.free_memory_mb !== undefined) ? sys.free_memory_mb + ' MB' : (sys.free_memory ? sys.free_memory + ' B' : 'n/a');
+                    const totalMB = (sys.total_memory_mb !== undefined) ? sys.total_memory_mb + ' MB' : (sys.total_memory ? sys.total_memory + ' B' : 'n/a');
+                    const cpu = sys.cpu_load ? sys.cpu_load + '%' : 'n/a';
+                    const html = `\n+                        <h6>System summary</h6>\n+                        <ul class="small">\n+                            <li><strong>Uptime:</strong> ${sys.uptime || 'n/a'}</li>\n+                            <li><strong>Version:</strong> ${sys.version || 'n/a'}</li>\n+                            <li><strong>Free memory:</strong> ${freeMB}</li>\n+                            <li><strong>Total memory:</strong> ${totalMB}</li>\n+                            <li><strong>CPU load:</strong> ${cpu}</li>\n+                            <li><strong>Platform:</strong> ${sys.platform || 'n/a'}</li>\n+                        </ul>\n+                    `;
+                    if (liveContainer) {
+                        liveContainer.innerHTML = html;
+                    } else {
+                        const fallback = document.createElement('div');
+                        fallback.id = 'liveData';
+                        fallback.style.maxWidth = '800px';
+                        fallback.style.margin = '16px auto 0';
+                        fallback.className = 'container-xxl';
+                        fallback.innerHTML = html;
+                        document.querySelector('.card-body').appendChild(fallback);
+                    }
+                }
+                console.log('router system:', body.system);
+            } else {
+                const msg = body.error || body.message || 'Connection failed';
+                const box = document.createElement('div');
+                box.className = 'alert alert-danger';
+                box.innerText = msg;
+                document.querySelector('.card-body').prepend(box);
+                if (liveContainer) liveContainer.innerHTML = '';
+            }
+        }).catch(err => {
+            const box = document.createElement('div');
+            box.className = 'alert alert-danger';
+            box.innerText = 'Connection failed: ' + err;
+            document.querySelector('.card-body').prepend(box);
+        }).finally(()=>{
+            btn.disabled = false;
+            btn.innerText = 'Test Connection';
+        });
+    });
+</script>
+
+{% endblock %}
+
+<!-- liveData container populated by Test Connection -->
+<div id="liveData" style="max-width: 800px; margin: 16px auto 0;" class="container-xxl"></div>

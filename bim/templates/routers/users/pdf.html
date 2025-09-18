@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotspot Users</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 8px 12px; text-align: left; border: 1px solid #ddd; }
+        .table th { background-color: #f4f4f4; }
+        .page-break { page-break-before: always; }
+    </style>
+</head>
+<body>
+
+    <h2>Hotspot Users for Router: {{ router.name }}</h2>
+
+    {% for chunk in users_chunked %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Profile</th>
+                    <th>Router Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in chunk %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.profile }}</td>
+                        <td>{{ user.router_name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+    {% endfor %}
+
+</body>
+</html>

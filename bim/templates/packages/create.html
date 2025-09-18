@@ -1,0 +1,37 @@
+{% extends 'app.html' %}
+
+{% block title %}Create Package{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="page-info">
+        <h3 class="mb-4">Create Internet Packages</h3>
+    </div>
+
+<form action="{% url 'packagespots_store' %}" method="POST">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" name="name" id="name" class="form-control" placeholder="John Doe" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="no_of_users" class="form-label">No. of Users</label>
+        <input type="number" name="no_of_users" id="no_of_users" class="form-control" placeholder="1" value="1" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="bandwidth" class="form-label">Bandwidth</label>
+        <input type="text" name="bandwidth" id="bandwidth" class="form-control" placeholder="512k/1M" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="duration" class="form-label">Duration</label>
+        <input type="text" name="duration" id="duration" class="form-control" placeholder="3d for 3 days, 3h for 3 hours 3 for 3 seconds" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Profile</button>
+    <a href="{% url 'packagespots_index' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

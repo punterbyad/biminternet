@@ -1,0 +1,31 @@
+<form id="generatePdfForm" action="/vouchers/{{ router.id }}/hotspots/{{ hotspotId }}/users/generate-pdf" method="POST">
+    {% csrf_token %}
+
+    <!-- Hotspot Server Dropdown -->
+    <div class="mb-3">
+        <label for="hotspot_server" class="form-label">Hotspot Server</label>
+        <select name="hotspot_server" id="hotspot_server" class="form-control" required>
+            {% for hotspot in hotspotServers %}
+                <option value="{{ hotspot.id }}">{{ hotspot.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Profile Dropdown -->
+    <div class="mb-3">
+        <label for="profile" class="form-label">Package</label>
+        <select name="profile" id="profile" class="form-control" required>
+        {% for profile in profiles %}
+            <option value="{{ profile.router_name|default:profile.name }}">{{ profile.display_name|default:profile.name|cut:'profile_' }}</option>
+        {% endfor %}
+        </select>
+    </div>
+
+    <!-- Number of Users -->
+    <div class="mb-3">
+        <label for="number_of_users" class="form-label">Number of Users</label>
+        <input type="number" name="number_of_users" id="number_of_users" class="form-control" value="1" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Generate Users and PDF</button>
+</form>

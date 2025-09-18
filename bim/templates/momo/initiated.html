@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Success</title>
+  <link rel="stylesheet" href="{% static 'vendor/css/rtl/theme-default.css' %}"> <!-- Replace with actual path -->
+
+  <style>
+    body {
+      background-color: #0A0E27;
+      margin: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .success-box {
+      max-width: 480px;
+      width: 100%;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #FB9129;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem auto;
+    }
+
+    .icon-circle img {
+      width: 64px;
+      height: 64px;
+    }
+
+    .title {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: #0A0E27;
+      margin-bottom: 1rem;
+    }
+
+    .subtitle {
+      color: #4c4e64;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .material-button {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: #FB9129;
+      color: #ffffff;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .material-button:hover {
+      background-color: #D17A24;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-box">
+    <div class="icon-circle">
+      <img src="{% static 'img/ok.png' %}" alt="Payment Successful Icon" />
+    </div>
+    <h1 class="title"><b>Payment Initiated!</b></h1>
+    <p class="subtitle"><b>Please check your phone and fill in your PIN Code.</b></p>
+
+    <a href="http://wifi.net" class="material-button">Go to Dashboard</a>
+  </div>
+</body>
+</html>

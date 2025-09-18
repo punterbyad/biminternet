@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="light" data-sidebar-size="lg" data-sidebar-image="none">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block title %} Email OTP | Smartwire{% endblock %}</title>
+
+  <link rel="shortcut icon" href="{% static 'assets/img/favicon.png' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+  <script src="{% static 'assets/js/layout.js' %}"></script>
+</head>
+<body>
+  <!-- Main Wrapper -->
+  <div class="main-wrapper login-body">
+    <div class="login-wrapper">
+      <div class="container">
+
+        <img class="img-fluid logo-dark mb-2 logo-color" src="{% static 'assets/img/logo2.png' %}" alt="Logo">
+        <img class="img-fluid logo-light mb-2" src="{% static 'assets/img/logo2-white.png' %}" alt="Logo">
+
+        <div class="loginbox">
+          <div class="login-right">
+            <div class="login-right-wrap">
+
+              <h1>Email OTP</h1>
+              <p class="account-subtitle">Enter the code sent to your email</p>
+
+              {% if messages %}
+                <div class="mb-3">
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <form method="post">
+                {% csrf_token %}
+                <div class="input-block mb-3">
+                  {{ form.otp }}
+                </div>
+
+                <button class="btn btn-lg btn-primary w-100" type="submit">Verify</button>
+              </form>
+
+              <div class="login-or mt-4">
+                <span class="or-line"></span>
+              </div>
+
+			  <!--
+              <div class="input-block mb-3 mt-3">
+                <div class="row">
+                  <div class="col-6">
+                    <a class="forgot-link" href="{% url 'accounts:lost_phone_start' %}">Lost Phone?</a>
+                  </div>
+                  <div class="col-6 text-end">
+                    <a class="forgot-link" href="{% url 'password_reset' %}">Forgot Password?</a>
+                  </div>
+                </div>
+              </div>
+			  -->
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- /Main Wrapper -->
+
+  <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+  <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/js/theme-settings.js' %}"></script>
+  <script src="{% static 'assets/js/greedynav.js' %}"></script>
+  <script src="{% static 'assets/js/script.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+You're invited to join {{ account.name }} on {{ site_name }}.
+
+Click the link to accept the invitation:
+{{ accept_url }}
+
+If you don't recognize this invitation, you can ignore this email.

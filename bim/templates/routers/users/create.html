@@ -1,0 +1,49 @@
+{% extends 'app.html' %}
+
+{% block title %}Create Hotspot User{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4">Create Hotspot User for Router: <strong>{{ router.name }}</strong></h4>
+
+    <form action="{% url 'hotspots_users_store' router.id hotspotId %}" method="POST">
+        {% csrf_token %}
+
+        <!-- Hotspot Server Dropdown -->
+        <div class="mb-3">
+            <label for="hotspot_server" class="form-label">Hotspot Server</label>
+            <select name="hotspot_server" id="hotspot_server" class="form-control" required>
+                {% for hotspot in hotspotServers %}
+                    <option value="{{ hotspot.id }}">{{ hotspot.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Profile Dropdown -->
+        <div class="mb-3">
+            <label for="profile" class="form-label">Profile</label>
+            <select name="profile" id="profile" class="form-control" required>
+                {% for profile in profiles %}
+                    <!-- submit the router-side canonical profile name, show friendly label -->
+                    <option value="{{ profile.router_name|default:profile.name }}">{{ profile.display_name|default:profile.name|cut:'profile_' }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Username -->
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" name="username" id="username" class="form-control" required>
+        </div>
+
+        <!-- Password (Optional) -->
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="text" name="password" id="password" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create User</button>
+        <a href="{% url 'hotspots_users' router.id hotspotId %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

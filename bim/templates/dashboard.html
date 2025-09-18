@@ -1,0 +1,228 @@
+{% extends 'app.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+        <div class="page-info">
+            <h4 class="py-3 mb-4"><span class="text-muted fw-light">Home /</span> Dashboard</h4>
+        </div>
+
+    <!-- Summary Cards -->
+    <div class="row">
+        <!-- Today's Transactions -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100" style="background-color: #f0f9ff;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3" style="background-color: #3b82f6; border-radius: 50%; padding: 10px;">
+                            <i class="mdi mdi-cash-multiple mdi-36px text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title text-primary mb-0">Today's Transactions</h5>
+                            <h4 class="text-dark mb-0">{{ todayTransactions|floatformat:2|intcomma }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- This Week's Transactions -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100" style="background-color: #fef9f3;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3" style="background-color: #f59e0b; border-radius: 50%; padding: 10px;">
+                            <i class="mdi mdi-calendar-week-outline mdi-36px text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title text-warning mb-0">This Week's Transactions</h5>
+                            <h4 class="text-dark mb-0">{{ weekTransactions|floatformat:2|intcomma }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- This Month's Transactions -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100" style="background-color: #eef9f2;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3" style="background-color: #10b981; border-radius: 50%; padding: 10px;">
+                            <i class="mdi mdi-calendar-month-outline mdi-36px text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title text-success mb-0">This Month's Transactions</h5>
+                            <h4 class="text-dark mb-0">{{ monthTransactions|floatformat:2|intcomma }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <div class="row">
+        <!-- Vouchers Created Today -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Today's Voucher Users</h5>
+                    <h4>{{ todayUsers }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vouchers Created This Week -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">This Week's Voucher Users</h5>
+                    <h4>{{ weekUsers }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vouchers Created This Month -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success">This Month's Voucher Users</h5>
+                    <h4>{{ monthUsers }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Transactions Table -->
+    <div class="card mb-4">
+        <div class="card-header">Last 5 Transactions</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Reason</th>
+                            <th>Router Name</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in recentTransactions %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ transaction.amount }}</td>
+                            <td>{{ transaction.type }}</td>
+                            <td>{{ transaction.reason }}</td>
+                            <td>{{ transaction.router.name|default:"N/A" }}</td>
+                            <td>{{ transaction.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'transactions.index' %}" class="btn btn-primary">View All Transactions</a>
+        </div>
+    </div>
+
+        <!-- Voucher Users Chart -->
+    <!--
+    <div class="card mb-4">
+        <div class="card-header">Voucher Users Created (Last 7 Days)</div>
+        <div class="card-body">
+            <canvas id="voucherChart"></canvas>
+        </div>
+    </div>
+    -->
+    <!-- Router Balances and Bar Chart -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Transaction Volume (Last 7 Days)</div>
+                <div class="card-body">
+                    <canvas id="transactionsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Router Balances</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for router in routerBalances %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ router.name }}</span>
+                            <span class="badge bg-primary rounded-pill">
+                                {% if router.transactions_total is not None %}
+                                    {{ router.transactions_total|default:0|floatformat:2|intcomma }}
+                                {% else %}
+                                    {{ router.balance|default:0|floatformat:2|intcomma }}
+                                {% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ chartData|json_script:"chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    const ctx = document.getElementById('transactionsChart').getContext('2d');
+    const labels = chartData.map(data => data.date);
+    const data = chartData.map(data => data.total);
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Transaction Volume',
+                data: data,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+<script>
+    // If you have a separate voucher chart data, use a different context and variable
+    const voucherCtx = document.getElementById('voucherChart').getContext('2d');
+    new Chart(voucherCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Vouchers Created',
+                data: data,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}

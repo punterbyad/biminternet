@@ -1,0 +1,175 @@
+{% extends 'guest.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<!-- Content -->
+</br></br>
+<div class="authentication-wrapper authentication-cover">
+
+  <div class="authentication-inner row m-0">
+    <!-- /Left Section -->
+    <div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center justify-content-center p-5 pb-2">
+      <img
+        src="{% static 'img/illustrations/auth-login-illustration-light.png' %}"
+        class="auth-cover-illustration w-100"
+        alt="auth-illustration"
+        width="400px"
+        height="600px"
+        />
+
+    </div>
+    <!-- /Left Section -->
+
+    <!-- Login -->
+    <div
+      class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-5 px-4 py-4">
+      <div class="w-px-400 mx-auto pt-5 pt-lg-0">
+        <h4 class="mb-2">Welcome to BIM NETWORKS! 👋</h4>
+        <p class="mb-4">Please sign-in to your account and start the adventure</p>
+              {# Messages are rendered centrally in the global layout. Do not render them here. #}
+
+              {# Non-field errors from the form #}
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                  {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                </div>
+              {% endif %}
+              
+        <form id="formAuthentication" class="mb-3" action="" method="POST">
+          {% csrf_token %}
+          
+          {% if form.errors %}
+            <span class="badge bg-label-danger rounded-pill">
+              {% for error in form.phone.errors %}
+                {{ error }}
+              {% endfor %}
+            </span>
+          {% endif %}
+          </br></br>
+          
+          <div class="mb-3">
+            <label class="form-label">Mobile phone</label>
+            <div class="input-group">
+              <select id="countryCode" class="form-select" style="max-width:110px;">
+                <option value="256" selected>+256</option>
+                <option value="254">+254</option>
+                <option value="255">+255</option>
+              </select>
+              <input id="phoneInput" name="phone" type="tel" class="form-control" inputmode="tel" pattern="\d*" maxlength="15" placeholder="712345678" aria-describedby="phoneHelp" />
+              <input type="hidden" name="phone_number" id="fullPhoneNumber" />
+            </div>
+            <div id="phoneHelp" class="form-text">Example: +256 712 345678 — only digits required in the input.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group input-group-merge">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+                aria-describedby="passwordHelp"
+              />
+              <span class="input-group-text cursor-pointer" onclick="togglePassword()"><i class="mdi mdi-eye-off-outline"></i></span>
+            </div>
+            <div id="passwordHelp" class="form-text">Enter your password.</div>
+            {% if form.password.errors %}
+              <div class="form-text text-danger mt-1">
+                {% for error in form.password.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3 d-flex justify-content-between align-items-center w-100">
+            <a class="forgot-link" href="{% url 'accounts:lost_phone_start' %}">Lost phone?</a>
+            <a class="forgot-link" href="{% url 'password_reset' %}">Forgot password?</a>
+          </div>
+          
+          <button class="btn btn-primary d-grid w-100">Sign in</button>
+        </form>
+
+	<div class="text-center dont-have">Don't have an account? <a href="{% url 'accounts:signup' %}">Register</a></div>
+
+            </div>
+
+      </div>
+    </div>
+    <!-- /Login -->
+  </div>
+</div>
+
+<!-- / Content -->
+
+<script>
+  (function(){
+    function qs(sel) { return document.querySelector(sel); }
+
+    function init(){
+      var phoneInput = qs('#phoneInput');
+      var countryCode = qs('#countryCode');
+      var hiddenPhone = qs('#fullPhoneNumber');
+      var phoneHelp = qs('#phoneHelp');
+      var form = qs('#formAuthentication');
+
+      function setHelp(msg, isError){
+        if (!phoneHelp) return;
+        phoneHelp.textContent = msg;
+        phoneHelp.classList.toggle('text-danger', !!isError);
+      }
+
+      function normalizePhone(){
+        if (!phoneInput || !countryCode || !hiddenPhone) return '';
+        var number = (phoneInput.value || '').trim();
+        number = number.replace(/\D/g, ''); // keep digits only
+        while(number.startsWith('0')) number = number.substring(1);
+        if (number.length) hiddenPhone.value = '+' + countryCode.value + number;
+        else hiddenPhone.value = '';
+        return number;
+      }
+
+      function validatePhone(){
+        var num = normalizePhone();
+        if (!num || num.length < 6 || num.length > 15){
+          setHelp('Please enter a valid phone number (6–15 digits).', true);
+          return false;
+        }
+        setHelp('Example: +256 712 345678 — only digits required in the input.', false);
+        return true;
+      }
+
+      if (phoneInput) phoneInput.addEventListener('input', normalizePhone);
+      if (countryCode) countryCode.addEventListener('change', normalizePhone);
+
+      if (form){
+        form.addEventListener('submit', function(e){
+          if (!validatePhone()){
+            e.preventDefault();
+            if (phoneInput) phoneInput.focus();
+          } else {
+            normalizePhone();
+          }
+        });
+      }
+
+      // initial run
+      normalizePhone();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    if (document.readyState !== 'loading') init();
+
+    // safe toggle to avoid undefined function errors
+    window.togglePassword = function(){
+      var pwd = document.getElementById('password');
+      if (!pwd) return;
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    };
+  })();
+</script>
+
+{% endblock %}

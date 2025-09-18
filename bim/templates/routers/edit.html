@@ -1,0 +1,79 @@
+{% extends 'app.html' %}
+
+{% block title %}Edit Router{% endblock %}
+
+{% block content %}
+
+<div class="container-xxl flex-grow-1 container-p-y d-flex justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-white text-center">
+                <div class="page-info">
+                    <h4>Edit Router</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form action="{% url 'routers.update' router.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="_method" value="PUT">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Router Name</label>
+                        <input type="text" id="name" name="name" class="form-control" value="{{ router.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" id="location" name="location" class="form-control" value="{{ router.location }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Router Type</label>
+                        <select id="type" name="type" class="form-select" required>
+                            <option value="Mikrotik" {% if router.type == 'Mikrotik' %}selected{% endif %}>Mikrotik</option>
+                            <option value="TPLink" {% if router.type == 'TPLink' %}selected{% endif %}>TPLink</option>
+                            <option value="Lynksys" {% if router.type == 'Lynksys' %}selected{% endif %}>Lynksys</option>
+                            <option value="Cisco" {% if router.type == 'Cisco' %}selected{% endif %}>Cisco</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">IP Address</label>
+                        <input type="text" id="ip_address" name="ip_address" class="form-control" value="{{ router.ip_address }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="router_user" class="form-label">Router Username</label>
+                        <input type="text" id="router_user" name="router_user" class="form-control" value="{{ router.router_user }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="router_password" class="form-label">Router Password</label>
+                        <input type="password" id="router_password" name="router_password" class="form-control" value="{{ router.router_password }}" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">Update Router</button>
+                        <a href="{% url 'routers.index' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

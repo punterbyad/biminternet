@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generated Vouchers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-after: auto; /* For printing */
+        }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+            width: 20%; /* Equal width for 5 columns */
+        }
+
+        .table th {
+            background-color: #f4f4f4;
+        }
+
+        .voucher-cell {
+            padding: 10px;
+            text-align: center;
+            page-break-inside: avoid; /* Prevent splitting vouchers across pages */
+        }
+
+        .voucher-cell strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .app-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-break: break-all; /* Prevent long usernames from overflowing */
+        }
+
+        .qr-code {
+            margin: 10px auto;
+            max-width: 100px; /* Constrain QR code size */
+            display: block;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .header {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ settings.APP_NAME }} - Generated Vouchers</h1>
+        <p>Date: {{ date }}</p>
+        <p>Router: {{ router.name }}</p>
+    </div>
+
+    <table class="table">
+        <tr>
+            {% for user in users %}
+                {% if forloop.counter0|divisibleby:5 and forloop.counter0 > 0 %}
+                    </tr><tr>
+                {% endif %}
+                <td class="voucher-cell">
+                    <p><strong>{{ settings.APP_NAME }}</strong></p>
+                    <div class="app-name">{{ user.username }}</div>
+                   
+                    <div class="qr-code">
+                        {{ user.qr_code|safe }}
+                    </div>
+                </td>
+            {% endfor %}
+            {% comment %} Fill empty cells if needed {% endcomment %}
+            {% with remaining_cells=5|subtract:users|length|mod:5 %}
+                {% for i in remaining_cells|get_range %}
+                    <td>&nbsp;</td>
+                {% endfor %}
+            {% endwith %}
+        </tr>
+    </table>
+</body>
+</html>

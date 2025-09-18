@@ -1,0 +1,150 @@
+{% extends 'app.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+        <div class="page-info">
+            <h3>Withdraw Funds from Router: {{ router.name }}</h3>
+        </div>
+
+    {# Messages are shown centrally in app.html via the flash-area. Do not render them here. #}
+
+    <form id="withdrawForm" action="{% url 'withdraw_store' router.id %}" method="POST">
+        {% csrf_token %}
+
+        <!-- Hidden fields -->
+        <input type="hidden" name="email" value="{{ request.user.email }}">
+        <input type="hidden" name="router_id" value="{{ router.id }}">
+        <input type="hidden" name="hotspot_name" value="BIM">
+
+        <!-- Visible fields -->
+        <div class="mb-3">
+            <label for="amount" class="form-label">Withdraw Amount (UGX)</label>
+            <input type="number" name="amount" id="amount" class="form-control"
+                   placeholder="Enter amount" required min="10000">
+            <small class="text-muted">Minimum withdrawal: 10,000 UGX</small>
+        </div>
+
+        <div class="mb-3">
+            <label for="phone" class="form-label">Mobile Money Phone Number</label>
+            <input type="text" name="phone" id="phone" class="form-control"
+                   placeholder="e.g. 0751123456" required>
+            <small class="text-muted">Format: 0751123456 (MTN) or 0701123456 (Airtel)</small>
+        </div>
+
+        <div class="mb-3">
+            <label for="narration" class="form-label">Narration (Optional)</label>
+            <textarea name="narration" id="narration" class="form-control"
+                     placeholder="Optional description"></textarea>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'withdraw_index' %}" class="btn btn-secondary me-md-2">Cancel</a>
+            <button type="button" id="initiateBtn" class="btn btn-primary">Initiate Withdrawal</button>
+        </div>
+    </form>
+</div>
+
+<!-- Password Confirmation Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Withdrawal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to withdraw <strong id="withdrawAmountDisplay"></strong> UGX</p>
+                <p>Please enter your password to confirm:</p>
+                <input type="password" id="passwordConfirm" class="form-control" placeholder="Your account password">
+                <div id="passwordError" class="text-danger mt-2" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmWithdrawBtn" class="btn btn-primary">Confirm Withdrawal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('withdrawForm');
+    const initiateBtn = document.getElementById('initiateBtn');
+    const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+    const withdrawAmountDisplay = document.getElementById('withdrawAmountDisplay');
+    const passwordConfirm = document.getElementById('passwordConfirm');
+    const passwordError = document.getElementById('passwordError');
+    const confirmWithdrawBtn = document.getElementById('confirmWithdrawBtn');
+
+    initiateBtn.addEventListener('click', function() {
+        const amount = document.getElementById('amount').value;
+        
+        if (!amount || amount < 10000) {
+            alert('Please enter a valid amount (minimum 10,000 UGX)');
+            return;
+        }
+        
+        withdrawAmountDisplay.textContent = new Intl.NumberFormat().format(amount);
+        passwordModal.show();
+    });
+
+    confirmWithdrawBtn.addEventListener('click', function() {
+        const password = passwordConfirm.value;
+        
+        if (!password) {
+            passwordError.textContent = 'Please enter your password';
+            passwordError.style.display = 'block';
+            return;
+        }
+
+        fetch('{% url "password_verify" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ password: password })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.valid) {
+                passwordError.style.display = 'none';
+                passwordModal.hide();
+                
+                initiateBtn.disabled = true;
+                initiateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                form.submit();
+            } else {
+                passwordError.textContent = data.message || 'Incorrect password. Please try again.';
+                passwordError.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            passwordError.textContent = 'Error verifying password. Please try again.';
+            passwordError.style.display = 'block';
+            console.error('Error:', error);
+        });
+    });
+
+    form.addEventListener('submit', function(e) {
+        const phone = document.getElementById('phone').value;
+        
+        if (!/^0[0-9]{9}$/.test(phone)) {
+            alert('Please enter a valid 10-digit Uganda phone number starting with 0');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+
+{% endblock %}

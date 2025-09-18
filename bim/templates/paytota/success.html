@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Success</title>
+  <link rel="stylesheet" href="{% static 'vendor/css/rtl/theme-default.css' %}"> <!-- Replace with correct path -->
+
+  <script>
+    function copyVoucher() {
+      const voucherText = document.getElementById('voucher-text').innerText;
+      navigator.clipboard.writeText(voucherText).then(() => {
+        alert('Voucher copied to clipboard!');
+      }).catch(() => {
+        alert('Failed to copy voucher. Please manually copy it.');
+      });
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #0A0E27;
+      margin: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .voucher-box {
+      max-width: 480px;
+      width: 100%;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #FB9129;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem auto;
+    }
+
+    .icon-circle img {
+      width: 64px;
+      height: 64px;
+    }
+
+    .title {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: #0A0E27;
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      color: #4c4e64;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .voucher-container {
+      background-color: #f3f4f6;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .voucher-code {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #FB9129;
+      margin: 0.5rem 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-orange {
+      background-color: #FB9129;
+    }
+
+    .btn-orange:hover {
+      background-color: #D17A24;
+    }
+
+    .btn-secondary {
+      background-color: #4B5563;
+    }
+
+    .btn-secondary:hover {
+      background-color: #1F2937;
+    }
+  </style>
+</head>
+<body>
+  <div class="voucher-box">
+    <div class="icon-circle">
+      <img src="{% static 'img/ok.png' %}" alt="Payment Successful Icon" />
+    </div>
+    <h1 class="title">Payment Successful!</h1>
+    <p class="message">Thank you for your payment. Your transaction has been completed successfully.</p>
+
+    <!-- Display Voucher -->
+    <div class="voucher-container">
+      <p class="message">Your voucher has been sent to your phone via SMS.</p>
+      <!--
+      <p id="voucher-text" class="voucher-code">{{ voucher|default:'Voucher not found' }}</p>
+      <button onclick="copyVoucher()" class="btn btn-orange" style="margin-top: 0.5rem;">Copy</button>
+      -->
+    </div>
+
+    <!-- Redirect to Login Page -->
+    <a href="http://wifi.net" class="btn btn-orange">Go to Login Page</a>
+  </div>
+</body>
+</html>

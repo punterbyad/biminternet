@@ -1,0 +1,17 @@
+New contact form message
+
+From: {{ name }} <{{ email }}>
+
+Message:
+{{ message }}
+
+--
+This email was sent from the contact form on the website.
+You have a new message from the contact form.
+
+Name: {{ name }}
+Email: {{ email }}
+
+Message:
+
+{{ message }}

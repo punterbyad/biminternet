@@ -1,0 +1,63 @@
+{% extends 'app.html' %}
+
+{% block title %}Router Notifications{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <h5 class="card-header">Voucher Creation Notifications</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Router</th>
+                                <th>Username</th>
+                                <th>Profile</th>
+                                <th>Hotspot</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-border-bottom-0">
+                            {% for notification in notifications %}
+                            <tr>
+                                <td>{{ notification.timestamp }}</td>
+                                <td>{{ notification.router }}</td>
+                                <td>{{ notification.username }}</td>
+                                <td>{{ notification.profile }}</td>
+                                <td>{{ notification.server }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No notifications found for your routers</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination Controls -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if notifications.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notifications.previous_page_number }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                        {% endif %}
+                        <li class="page-item disabled"><span class="page-link">Page {{ notifications.number }} of {{ notifications.paginator.num_pages }}</span></li>
+                        {% if notifications.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notifications.next_page_number }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

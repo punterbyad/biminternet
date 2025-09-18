@@ -1,0 +1,8 @@
+{% extends 'dashboard.html' %}
+{% block content %}
+  <h2>Invite member to {{ account.name }}</h2>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Send invite</button>
+  </form>
+{% endblock %}

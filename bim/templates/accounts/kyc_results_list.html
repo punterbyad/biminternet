@@ -1,0 +1,22 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<h2>KYC Results</h2>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>User</th>
+    <th>Event</th>
+    <th>Status</th>
+    <th>Answer</th>
+    <th>When</th>
+  </tr>
+  {% for r in results %}
+  <tr>
+    <td>{{ r.user.username }}</td>
+    <td>{{ r.event_type }}</td>
+    <td>{{ r.review_status }}</td>
+    <td>{{ r.review_answer }}</td>
+    <td>{{ r.created_at }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

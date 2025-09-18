@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transaction Processing</title>
+  <link rel="stylesheet" href="{% static 'vendor/css/rtl/theme-default.css' %}"> <!-- Replace with actual path -->
+
+  <script>
+    const reference = "{{ reference }}";
+    let pollInterval;
+    let timeout;
+
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(`/paytota/status/${reference}`);
+        const data = await response.json();
+
+        if (data.status === 'paid') {
+          clearInterval(pollInterval);
+          clearTimeout(timeout);
+          window.location.href = '/paytota/success';
+        } else if (data.status === 'error') {
+          clearInterval(pollInterval);
+          clearTimeout(timeout);
+          window.location.href = '/paytota/error?errorMessage=' + encodeURIComponent('Transaction Error. Please try again later or contact +256 701 130650.');
+        }
+      } catch (err) {
+        console.error('Error fetching status:', err);
+      }
+    };
+
+    const startPolling = () => {
+      pollInterval = setInterval(checkStatus, 3000);
+      timeout = setTimeout(() => {
+        clearInterval(pollInterval);
+        window.location.href = '/paytota/error?errorMessage=' + encodeURIComponent('Transaction timed out. You were supposed to add your PIN within 30 seconds.');
+      }, 45000);
+    };
+
+    window.onload = startPolling;
+  </script>
+
+  <style>
+    body {
+      background-color: #0A0E27;
+      margin: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .processing-box {
+      max-width: 480px;
+      width: 100%;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .spinner-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #FB9129;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem auto;
+    }
+
+    .spinner-icon {
+      animation: spin 1s linear infinite;
+      width: 64px;
+      height: 64px;
+      color: #ffffff;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .title {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: #0A0E27;
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      color: #4c4e64;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="processing-box">
+    <div class="spinner-circle">
+      <svg class="spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+    </div>
+
+    <h1 class="title">Processing Your Transaction</h1>
+    <p class="message"><strong>A payment request has been sent to your phone for confirmation. Please confirm within 30 seconds.</strong></p>
+  </div>
+</body>
+</html>

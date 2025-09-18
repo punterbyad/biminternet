@@ -1,0 +1,109 @@
+{% extends 'guest.html' %}
+{% load static %}
+{% block title %}login-2fa{% endblock %}
+
+{% block content %}
+<!-- Content -->
+</br></br>
+<div class="authentication-wrapper authentication-cover">
+  <div class="authentication-inner row m-0">
+    <!-- /Left Section -->
+    <div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center justify-content-center p-5 pb-2">
+      <img
+        src="{% static 'img/illustrations/auth-login-illustration-light.png' %}"
+        class="auth-cover-illustration w-100"
+        alt="auth-illustration"
+        width="400px"
+        height="600px"
+        />
+    </div>
+    <!-- /Left Section -->
+
+    <!-- Login -->
+    <div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-5 px-4 py-4">
+      <div class="w-px-400 mx-auto pt-5 pt-lg-0">
+        <h4 class="mb-2">Login Verification 👋</h4>
+        <p class="mb-4">Enter the OTP sent to your phone</p>
+        
+        {% if form.errors and form.otp.errors %}
+          <div class="alert alert-danger">
+            {% for error in form.otp.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if messages %}
+          {% for message in messages %}
+            {% if message.tags == 'success' %}
+              <div class="alert alert-success">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        
+        <form id="formAuthentication" class="mb-3" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="phone" value="{{ request.session.phone_for_2fa }}">
+          
+          {% if form.errors and form.otp.errors %}
+            <span class="badge bg-label-danger rounded-pill">
+              {% for error in form.otp.errors %}
+                {{ error }}
+              {% endfor %}
+            </span>
+          {% endif %}
+          </br></br>
+          
+          <div class="form-floating form-floating-outline mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="otp"
+              name="otp"
+              placeholder="Enter OTP"
+              required="required"
+              autofocus />
+            <label for="otp">Enter OTP</label>
+          </div>
+
+  <div class="form-floating form-floating-outline mb-3 d-flex justify-content-between align-items-center w-100">
+    <a class="forgot-link" href="{% url 'accounts:lost_phone_start' %}">Lost Phone?</a>
+    <a class="forgot-link" href="{% url 'password_reset' %}">Forgot Password?</a>
+  </div>
+
+          <button class="btn btn-primary d-grid w-100">Verify OTP</button>
+        </form>
+      </div>
+    </div>
+    <!-- /Login -->
+  </div>
+</div>
+<!-- / Content -->
+{% endblock %}
+
+	<script>
+  (function(){
+    // Guarded phone normalization: only run if expected elements exist
+    var phoneInput = document.getElementById('phoneInput');
+    var countryCode = document.getElementById('countryCode');
+    var hiddenPhone = document.getElementById('fullPhoneNumber');
+
+    if (!phoneInput || !countryCode || !hiddenPhone) return;
+
+    function normalizePhone(){
+      var number = (phoneInput.value || '').trim();
+      number = number.replace(/[\s-]/g, '');
+      if (number.startsWith('0')) number = number.substring(1);
+      hiddenPhone.value = '+' + countryCode.value + number;
+    }
+
+    phoneInput.addEventListener('input', normalizePhone);
+    countryCode.addEventListener('change', normalizePhone);
+    var form = document.querySelector('form');
+    if (form) form.addEventListener('submit', normalizePhone);
+    // initial run
+    normalizePhone();
+  })();
+  </script>

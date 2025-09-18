@@ -1,0 +1,11 @@
+<html>
+  <body style="font-family: Arial, Helvetica, sans-serif; color: #111;">
+    <h2>You’ve been invited to join {{ account.name }}</h2>
+    <p>Hello,</p>
+    <p>{{ inviter_name }} has invited you to join the account <strong>{{ account.name }}</strong> on {{ site_name }}.</p>
+    <p style="margin-top: 1rem;"><a href="{{ accept_url }}" style="background:#0d6efd;color:#fff;padding:10px 14px;border-radius:6px;text-decoration:none;">Accept invitation</a></p>
+    <p style="color:#666;font-size:.9rem;">If you already have an account, log in first and then use the link. If not, signing up will preserve your invited role.</p>
+    <hr style="border:none;border-top:1px solid #eee;"/>
+    <small style="color:#999;">This message was sent from {{ site_name }}.</small>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block title %}Start KYC Verification{% endblock %}
+
+{% block content %}
+<div class="content container-fluid">
+<br/>
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+      <div class="card">
+        <div class="card-header" align="center">
+          <h4 class="card-title mb-0">Start KYC Verification</h4>
+        </div>
+
+        <div class="card-body text-center">
+          {% if already_verified %}
+            <p class="mb-3 text-success">KYC verified.</p>
+            <p class="small text-muted">Status: <strong>{{ kyc_status|capfirst }}</strong></p>
+            {% if external_id %}
+              <p class="small text-muted">Reference: {{ external_id }}</p>
+            {% endif %}
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3">Return to dashboard</a>
+          {% elif already_submitted %}
+            <p class="mb-3">KYC submitted and currently under review.</p>
+            <p class="small text-muted">Status: <strong>{{ kyc_status|capfirst }}</strong></p>
+            {% if external_id %}
+              <p class="small text-muted">Reference: {{ external_id }}</p>
+            {% endif %}
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3">Return to dashboard</a>
+          {% else %}
+            <p class="mb-3">Scan the QR code below to start KYC verification:</p>
+
+            <div class="mb-4">
+              <img src="data:image/png;base64,{{ qr_code }}" 
+                   alt="KYC QR Code" 
+                   style="max-width:250px;height:auto;" 
+                   class="img-fluid rounded shadow">
+            </div>
+
+            <!--
+            <p>If you prefer, you can also open the verification link directly:</p>
+            <a href="{{ verification_link }}" target="_blank" class="btn btn-primary mt-2">
+              Open Verification Link
+            </a> -->
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+

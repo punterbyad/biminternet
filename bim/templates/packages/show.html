@@ -1,0 +1,33 @@
+{% extends 'app.html' %}
+
+{% block title %}Show Account Details{% endblock %}
+
+{% block content %}
+<!-- Content -->
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="page-info">
+        <h4 class="py-3 mb-4"><span class="text-muted fw-light"></span><a href="/banks">Bank Accounts</a></h4>
+    </div>
+
+    <div class="app-ecommerce-category">
+        {# Messages are shown centrally in app.html; do not duplicate here. #}
+        
+        <div class="col-md-12 col-lg-12">
+            <div class="card h-100" align="left">
+                <div class="d-flex align-items-end row">
+                    <div class="col-md-6 order-2 order-md-1">
+                        <div class="card-body">
+                            <h4 class="card-title pb-xl-2"><strong>Bank Name: </strong> {{ bank.bank_name }} </h4>
+                            <p class="mb-0"><strong>Account Number: </strong> {{ bank.account_number }} </p>
+                            <p><strong>SWIFT Code: </strong> {{ bank.swift_code }}</p>
+                            <p><strong>Branch: </strong> {{ bank.bank_branch }}</p>
+
+                            <a href="/banks" class="btn btn-primary">Back to Banks</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

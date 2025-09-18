@@ -1,0 +1,53 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block title %}Start KYC Verification{% endblock %}
+
+{% block content %}
+<div class="content container-fluid">
+
+  <div class="row">
+    <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Start KYC Verification</h4>
+        </div>
+
+        <div class="card-body text-center">
+          {% if already_verified %}
+            <p class="mb-3 text-success">KYC verified.</p>
+            <p class="small text-muted">Status: <strong>{{ kyc_status|capfirst }}</strong></p>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3">Return to dashboard</a>
+          {% elif already_submitted %}
+            <p class="mb-3">KYC submitted and currently under review.</p>
+            <p class="small text-muted">Status: <strong>{{ kyc_status|capfirst }}</strong></p>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3">Return to dashboard</a>
+          {% else %}
+            <p class="mb-3">Click the button below to start your verification:</p>
+
+            <a href="{{ verification_link }}" 
+               class="btn btn-primary btn-lg w-100 mb-3" 
+               target="_blank">
+              Start Verification
+            </a>
+
+            <p class="small text-muted">You will be redirected automatically.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% if not already_verified %}
+  {% if not already_submitted %}
+    <script>
+      // Automatically redirect user to verification link when a fresh flow is started
+      window.onload = function() {
+        window.location.href = "{{ verification_link }}";
+      }
+    </script>
+  {% endif %}
+{% endif %}
+{% endblock %}

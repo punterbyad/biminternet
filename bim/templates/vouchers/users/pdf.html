@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generated Vouchers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .table th {
+            background-color: #f4f4f4;
+        }
+
+        .voucher-cell {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .voucher-cell strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .app-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ settings.APP_NAME }} - Generated Vouchers</h1>
+        <p>Date: {% now "F j, Y" %}</p>
+    </div>
+
+    <table class="table">
+        <tr>
+            {% for user in users %}
+                {% if forloop.counter0|divisibleby:5 and forloop.counter0 > 0 %}
+                    </tr><tr>
+                {% endif %}
+                <td class="voucher-cell">
+                    <div class="app-name">{{ settings.APP_NAME }}</div>
+                    <strong>{{ user.username }}</strong>
+                    <p>Profile: {{ user.profile }}</p>
+                    <p>Hotspot Server: {{ user.hotspot_server }}</p>
+                </td>
+            {% endfor %}
+        </tr>
+    </table>
+</body>
+</html>

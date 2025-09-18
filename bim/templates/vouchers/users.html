@@ -1,0 +1,284 @@
+{% extends 'app.html' %}
+{% load static %}
+{% block title %}Hotspot Users{% endblock %}
+
+{% block content %}
+<style>
+    /* Style for disabled users */
+    .disabled-user {
+        opacity: 0.5; /* Make the disabled user appear faded */
+        pointer-events: none; /* Disable clicks and interactions */
+    }
+
+    /* Style for disabled user fields */
+    .disabled-user td {
+        color: #b0b0b0; /* Light gray text for disabled rows */
+    }
+</style>
+
+<div class="container-xxl flex-grow-1 container-p-y">
+        <div class="page-info">
+            <h3 class="py-3 mb-4" align="center">Vouchers for <strong>{{ hotspot_name }}</strong> Hotspot on Router: <strong>{{ router.name }}</strong></h3>
+        </div>
+
+    {# debug info removed - use server terminal prints instead #}
+
+    <div class="d-flex justify-content-end mb-3">
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{% url 'voucherspots.users.create' router.id hotspotId %}" class="btn btn-primary">
+                    Create Single Voucher
+            </a>
+        </div> &nbsp;&nbsp;&nbsp;&nbsp;
+        <!-- Add Multiple Users Button -->
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createMultipleUsersModal">Create Multiple Vouchers</button>
+        </div>
+    </div>
+
+    <!-- Filter: Active / All -->
+    <div class="mb-3">
+        <div class="btn-group" role="group" aria-label="Filter users">
+            <button type="button" id="filter-all" class="btn btn-outline-secondary active">All</button>
+            <button type="button" id="filter-active" class="btn btn-outline-success">Active</button>
+        </div>
+    </div>
+
+    <!-- Hotspot Users Table -->
+    <div class="card equal-height">
+        <div class="card-body">
+            <div class="table-responsive text-nowrap">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Vouchers</th>
+                    <th>Packages</th>
+                    <th>Status</th>
+                    <th>MAC Address</th>
+                    <th>Uptime</th>
+                    <!--<th>Time Left</th>-->
+                    <th>Bytes In</th>
+                    <th>Bytes Out</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for user in users.object_list %}
+                    <tr class="voucher-row {% if user.disabled == 'true' %}disabled-user{% else %}active-user{% endif %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ user.name|truncatechars:20 }}</td>
+                        <td>{{ user.profile|default:"N/A"|truncatechars:20 }}</td>
+                        <td>{% if user.disabled == 'false' %}Active{% else %}Disabled{% endif %}</td>
+                        <td>{{ user.mac_address|default:"N/A"|truncatechars:17 }}</td>
+                        <td>{{ user.uptime|default:"N/A"|truncatechars:10 }}</td>
+                        <td>{{ user.bytes_in|default:0|floatformat:0 }}</td>
+                        <td>{{ user.bytes_out|default:0|floatformat:0 }}</td>
+                        <td class="text-center">
+                            {% if user.disabled == 'false' %}
+                                <a href="{% url 'voucherspots.users.edit' router.id hotspotId user.id %}" class="text-warning me-2">
+                                 <i class="mdi mdi-pencil-outline"></i>
+                                </a>
+
+                                <!-- Disable button opens confirmation modal -->
+                                <button type="button" class="text-danger border-0 bg-transparent btn p-0 me-2" data-bs-toggle="modal" data-bs-target="#disableUserModal" data-id="{{ user.id }}" title="Disable">
+                                    <i class="mdi mdi-block-helper"></i>
+                                </button>
+
+                                <!-- Delete button opens confirmation modal -->
+                                <button type="button" class="text-danger border-0 bg-transparent btn p-0" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-id="{{ user.id }}" title="Delete">
+                                    <i class="mdi mdi-delete-outline"></i>
+                                </button>
+                            {% else %}
+                                <span class="text-muted">Voucher Disabled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center">No vouchers found</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+            </table>
+        </div>
+            <!-- Pagination Links (always rendered; controls will be disabled when single page) -->
+            <div class="d-flex justify-content-center mt-3">
+                {% include 'vendor/pagination/default.html' with page_obj=users %}
+            </div>
+            <div class="text-center text-muted mt-2">
+                {% if users.paginator %}
+                    Showing {{ users.paginator.count }} user{{ users.paginator.count|pluralize }} (page {{ users.number }} of {{ users.paginator.num_pages }})
+                {% else %}
+                    Showing {{ users.object_list|length }} user{{ users.object_list|length|pluralize }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="disableUserModal" tabindex="-1" aria-labelledby="disableUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="disableUserModalLabel">Confirm Disable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="disableUserForm" method="POST" action="#">
+                {% csrf_token %}
+                <input type="hidden" name="_method" value="PATCH">
+                <div class="modal-body">
+                    Are you sure you want to disable this voucher?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Disable</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteUserModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteUserForm" method="POST" action="#">
+                {% csrf_token %}
+                <input type="hidden" name="_method" value="DELETE">
+                <div class="modal-body">
+                    Are you sure you want to delete this voucher? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Creating Multiple Users -->
+<div class="modal fade" id="createMultipleUsersModal" tabindex="-1" aria-labelledby="createMultipleUsersModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createMultipleUsersModalLabel">Create Multiple Hotspot Vouchers</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="generatePdfForm" action="#" method="POST" target="_blank">
+                {% csrf_token %}
+
+                <!-- Hotspot Server Dropdown -->
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="hotspot_server" class="form-label">Hotspot Server</label>
+                        <select name="hotspot_server" id="hotspot_server" class="form-control" required>
+                            <option value="" disabled selected>Select a Hotspot Server</option>
+                            {% for hotspot in hotspotServers %}
+                                <option value="{{ hotspot.id }}">{{ hotspot.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Number of Users -->
+                    <div class="mb-3">
+                        <label for="number_of_users" class="form-label">Number of Users</label>
+                        <input type="number" name="number_of_users" id="number_of_users" class="form-control" value="1" required>
+                    </div>
+
+                <!-- Profile Dropdown -->
+                <div class="mb-3">
+                    <label for="profile" class="form-label">Package</label>
+                    <select name="profile" id="profile" class="form-control" required>
+                      <option value="" disabled selected>Select Internet Package</option>
+                        {% if profiles %}
+                            {% for profile in profiles %}
+                                <option value="{{ profile.router_name|default:profile.name }}">{{ profile.display_name|default:profile.name|cut:'profile_' }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled>No Packages available</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Users and PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle Disable Modal
+        var disableUserModal = document.getElementById('disableUserModal');
+        disableUserModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var userId = button.getAttribute('data-id');
+            var form = document.getElementById('disableUserForm');
+            // Use vouchers routes
+            form.action = '/vouchers/' + encodeURIComponent('{{ router.id }}') + '/hotspots/' + encodeURIComponent('{{ hotspotId }}') + '/users/' + encodeURIComponent(userId) + '/disable';
+        });
+
+        // Handle Delete Modal
+        var deleteUserModal = document.getElementById('deleteUserModal');
+        deleteUserModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var userId = button.getAttribute('data-id');
+            var form = document.getElementById('deleteUserForm');
+            form.action = '/vouchers/' + encodeURIComponent('{{ router.id }}') + '/hotspots/' + encodeURIComponent('{{ hotspotId }}') + '/users/' + encodeURIComponent(userId);
+        });
+    });
+</script>
+
+<script>
+    // Client-side filter for Active / All
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnAll = document.getElementById('filter-all');
+        const btnActive = document.getElementById('filter-active');
+
+        function showAll() {
+            document.querySelectorAll('.voucher-row').forEach(r => { r.style.display = ''; });
+            btnAll.classList.add('active');
+            btnActive.classList.remove('active');
+        }
+
+        function showActive() {
+            document.querySelectorAll('.voucher-row').forEach(r => {
+                if (r.classList.contains('active-user')) r.style.display = '';
+                else r.style.display = 'none';
+            });
+            btnAll.classList.remove('active');
+            btnActive.classList.add('active');
+        }
+
+        btnAll.addEventListener('click', showAll);
+        btnActive.addEventListener('click', showActive);
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const hotspotSelect = document.getElementById('hotspot_server');
+        const form = document.getElementById('generatePdfForm');
+
+        hotspotSelect.addEventListener('change', function () {
+                const hotspotId = hotspotSelect.value;
+                const routerId = "{{ router.id }}";
+
+            // Build the generate view URL at runtime since Django's url tag can't accept JS variables
+                // Pattern from urls.py: /vouchers/<router_id>/hotspots/<hotspot_id>/users/generate-view  (use named route if available)
+                form.action = '/vouchers/' + encodeURIComponent(routerId) + '/hotspots/' + encodeURIComponent(hotspotId) + '/users/generate-view';
+        });
+    });
+</script>
+{% endblock %}

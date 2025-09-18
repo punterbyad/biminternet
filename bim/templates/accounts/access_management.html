@@ -1,0 +1,169 @@
+
+{% extends 'dashboard.html' %}
+{% block title %}Access Management{% endblock %}
+{% block content %}
+<div class="container">
+	<div class="row align-items-center mb-3">
+		<div class="col-6"><h2>User Access Management</h2></div>
+		<div class="col-6 text-end"><button id="openInvite" class="btn btn-primary">+ Invite member</button></div>
+	</div>
+
+	<!-- Warning about cancelling invitations; user can dismiss and persist choice -->
+	<div id="cancelWarning" class="alert alert-warning alert-dismissible fade show" role="alert" style="display:none;">
+		<strong>Warning:</strong> Cancelling a pending invitation will remove it immediately and cannot be undone. If the invitee needs access later you will need to invite them again.
+		<div class="mt-2">
+			<button id="hideWarnBtn" class="btn btn-sm btn-outline-secondary">Don't show again</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary float-end" data-bs-dismiss="alert">Cancel</button>
+		</div>
+	</div>
+
+	<div class="card">
+	  <style>
+	    /* small visual polish: fade out rows and toast placement */
+	    .fade-out { transition: opacity 300ms linear, height 300ms linear, margin 300ms linear, padding 300ms linear; opacity: 0; height: 0 !important; margin: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+	    .invite-helper { font-size: .95rem; color: #6c757d; margin-bottom: 0.5rem; }
+	    #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 2200; }
+	  </style>
+		<div class="table-responsive">
+			<table class="table table-striped">
+				<thead>
+					<tr><th>Name / Email</th><th>Role</th><th>Status</th></tr>
+				</thead>
+				<tbody>
+					{% for m in memberships %}
+					<tr id="membership-{{ m.id }}">
+						<td>
+							{% if m.user %}
+								{{ m.user.first_name }} {{ m.user.last_name }}<br><small class="text-muted">{{ m.user.email }}</small>
+							{% else %}
+								<small class="text-muted"><em>{{ m.invitation_email }}</em></small>
+							{% endif %}
+						</td>
+						<td>{{ m.get_role_display }}</td>
+						<td>
+							{% if m.accepted %}
+								Active
+							{% else %}
+								<span class="d-none d-sm-inline">Pending</span>
+								<button class="btn btn-sm btn-outline-danger cancel-invite-btn" data-cancel-url="{% url 'accounts:cancel_invitation' m.id %}" data-membership-id="{{ m.id }}" data-invitation-email="{{ m.invitation_email|default:'' }}">Cancel</button>
+							{% endif %}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Invite Modal -->
+		<!-- helper text intentionally removed -->
+	<div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="inviteForm" method="post" action="{% url 'accounts:invite_account_member' account.id %}">
+					{% csrf_token %}
+					<div class="modal-header"><h5 class="modal-title">Invite member</h5></div>
+					<div class="modal-body">
+						<div class="mb-3">
+							<label class="form-label">Email</label>
+							<input id="id_invitation_email" name="invitation_email" type="email" class="form-control" required />
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Role</label>
+							<select id="id_role" name="role" class="form-select" required>
+								{% for value,label in role_choices %}
+									{% if value != 'owner' %}
+										<option value="{{ value }}">{{ label }}</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-primary">Send invite</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script>
+(function(){
+	// Debug logging removed for production: keep a no-op so calls remain safe
+	function printLog(msg){ /* no-op */ }
+
+	document.addEventListener('DOMContentLoaded', function(){
+		// show invite modal trigger
+		var openInvite = document.getElementById('openInvite');
+		if(openInvite) openInvite.addEventListener('click', function(){ new bootstrap.Modal(document.getElementById('inviteModal')).show(); });
+
+		// Warning display: show if there are pending invitations and the user hasn't hidden it
+		try{
+			var warn = document.getElementById('cancelWarning');
+			if(warn){
+				var hide = localStorage.getItem('hideCancelWarning');
+				var hasPending = !!document.querySelector('.cancel-invite-btn');
+				if(!hide && hasPending){ warn.style.display = 'block'; }
+				var hideBtn = document.getElementById('hideWarnBtn');
+				if(hideBtn){ hideBtn.addEventListener('click', function(){ localStorage.setItem('hideCancelWarning','1'); try{ bootstrap.Alert.getOrCreateInstance(warn).close(); }catch(e){ warn.style.display='none'; } }); }
+			}
+		}catch(e){ /* no-op */ }
+
+		document.querySelectorAll('.cancel-invite-btn').forEach(function(btn){
+			btn.addEventListener('click', function(ev){
+				ev.preventDefault();
+				var membershipId = btn.getAttribute('data-membership-id');
+				var email = btn.getAttribute('data-invitation-email') || '';
+				var url = btn.getAttribute('data-cancel-url') || (membershipId ? '/accounts/cancel-invitation/' + membershipId + '/' : '');
+				if(!url){ printLog('Cancel: no URL for ' + membershipId); return; }
+				if(!confirm('Cancel invitation' + (email ? (' ' + email) : '') + '?')) return;
+			printLog('Cancel confirmed for ' + membershipId);
+			// show inline spinner on the cancel button
+			var spinner = document.createElement('span'); spinner.className = 'spinner-border spinner-border-sm ms-2'; spinner.setAttribute('role','status'); spinner.setAttribute('aria-hidden','true');
+			btn.setAttribute('disabled','disabled'); btn.appendChild(spinner);
+				var csrf = (document.querySelector('input[name="csrfmiddlewaretoken"]')||{}).value || null;
+				var body = new URLSearchParams(); if(csrf) body.append('csrfmiddlewaretoken', csrf);
+				fetch(url, { method: 'POST', headers: csrf ? {'X-CSRFToken': csrf, 'Accept': 'application/json'} : {'Accept':'application/json'}, body: body })
+				.then(function(resp){
+					printLog('Cancel fetch status ' + resp.status);
+					if(!resp.ok) return resp.text().then(function(t){ throw new Error('Server ' + resp.status + ' - ' + t); });
+					return resp.json().catch(function(){ return {'success': true}; });
+				})
+				.then(function(){
+					printLog('Cancel success, removing row ' + membershipId);
+					// animate removal
+					var tr = document.getElementById('membership-' + membershipId) || btn.closest('tr');
+					if(tr){
+						tr.classList.add('fade-out');
+						setTimeout(function(){ if(tr && tr.parentNode) tr.parentNode.removeChild(tr); }, 350);
+					}
+					// show a small toast
+					try{
+						var tc = document.getElementById('toastContainer');
+						if(!tc){ tc = document.createElement('div'); tc.id='toastContainer'; document.body.appendChild(tc); }
+						var t = document.createElement('div'); t.className='toast align-items-center text-bg-success border-0 show'; t.role='alert'; t.ariaLive='assertive'; t.ariaAtomic='true';
+						t.style.minWidth='200px';
+						t.innerHTML = '<div class="d-flex"><div class="toast-body">Invitation cancelled</div><button type="button" class="btn btn-sm btn-light ms-2">Close</button></div>';
+						tc.appendChild(t);
+						var closeBtn = t.querySelector('button'); if(closeBtn) closeBtn.addEventListener('click', function(){ try{ t.remove(); }catch(e){} });
+						setTimeout(function(){ try{ t.remove(); }catch(e){} }, 3500);
+					}catch(e){/*ignore*/}
+				})
+				.catch(function(err){
+					printLog('Cancel failed: ' + (err && err.message ? err.message : String(err)));
+					// remove spinner and re-enable
+					try{ if(spinner && spinner.parentNode) spinner.parentNode.removeChild(spinner); btn.removeAttribute('disabled'); }catch(e){}
+					try{ var f=document.createElement('form'); f.method='POST'; f.action=url; if(csrf){ var i=document.createElement('input'); i.type='hidden'; i.name='csrfmiddlewaretoken'; i.value=csrf; f.appendChild(i);} document.body.appendChild(f); f.submit(); }catch(e){ printLog('Fallback submit failed'); }
+				});
+			});
+		});
+	});
+})();
+</script>
+
+{% endblock %}
+
+

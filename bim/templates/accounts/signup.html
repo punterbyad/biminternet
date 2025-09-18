@@ -1,0 +1,199 @@
+{% extends 'guest.html' %}
+{% load static widget_tweaks %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+</br></br>
+<div class="authentication-wrapper authentication-cover">
+	<div class="authentication-inner row m-0">
+		<div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center justify-content-center p-5 pb-2">
+			<img src="{% static 'img/illustrations/auth-login-illustration-light.png' %}" class="auth-cover-illustration w-100" alt="auth-illustration" width="400px" height="600px" />
+		</div>
+
+		<div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-5 px-4 py-4">
+			<div class="w-px-400 mx-auto pt-5 pt-lg-0">
+				<h4 class="mb-2">Create an account</h4>
+				<p class="mb-4">Register to access your dashboard</p>
+
+				{# Messages are shown centrally in guest.html via the guest-flash area. Do not render them here. #}
+
+				<form method="post" action="{% url 'accounts:signup' %}" id="signupForm">
+					{% csrf_token %}
+
+					<div id="otpMessage"></div>
+
+					<div class="mb-3">
+						<label class="form-label">Mobile phone</label>
+						<div class="input-group">
+							<select id="countryCode" class="form-select" style="max-width:100px">
+								<option value="256" selected>+256</option>
+								<option value="254">+254</option>
+								<option value="255">+255</option>
+							</select>
+							<input type="text" class="form-control" id="phoneInput" name="phone_display" />
+							<button type="button" id="sendOtpBtn" class="btn btn-outline-primary">Send OTP</button>
+						</div>
+					</div>
+
+					<input type="hidden" name="phone_number" id="hiddenPhoneNumber" />
+
+					<div class="mb-3" id="otpVerifyBlock" style="display:none;">
+						<input type="text" id="otpInput" class="form-control mb-2" maxlength="6" placeholder="Enter OTP">
+						<button type="button" id="verifyOtpBtn" class="btn btn-outline-success">Verify OTP</button>
+						<small id="otpError" class="text-danger d-block mt-2"></small>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Email address</label>
+						{{ form.email|add_class:"form-control" }}
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">First name</label>
+						{{ form.first_name|add_class:"form-control" }}
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Last name</label>
+						{{ form.last_name|add_class:"form-control" }}
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Password</label>
+						<div class="input-group input-group-merge">
+							{{ form.password1|add_class:"form-control" }}
+							<span class="input-group-text"><i class="mdi mdi-eye-off-outline cursor-pointer"></i></span>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Confirm password</label>
+						<div class="input-group input-group-merge">
+							{{ form.password2|add_class:"form-control" }}
+							<span class="input-group-text"><i class="mdi mdi-eye-off-outline cursor-pointer"></i></span>
+						</div>
+						<small id="passwordError" class="text-danger"></small>
+					</div>
+
+								<div class="mb-0">
+									<div class="tooltip-wrapper">
+										<button type="submit" class="btn btn-primary w-100" id="registerBtn" disabled>Register</button>
+										<span class="tooltip-text" id="registerTooltip">First verify your phone with Send OTP button above</span>
+									</div>
+								</div>
+				</form>
+
+				<div class="login-or my-3"><span class="or-line"></span></div>
+				<div class="text-center dont-have">Already have an account? <a href="{% url 'accounts:login' %}">Login</a></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+	console.debug('signup.js: DOMContentLoaded');
+	const emailInput = document.querySelector("input[name='email']");
+	const pass1 = document.querySelector("input[name='password1']");
+	const pass2 = document.querySelector("input[name='password2']");
+	const passwordError = document.getElementById('passwordError');
+	const registerBtn = document.getElementById('registerBtn');
+	const registerTooltip = document.getElementById('registerTooltip');
+	const phoneInput = document.getElementById('phoneInput');
+	const countryCode = document.getElementById('countryCode');
+	const sendOtpBtn = document.getElementById('sendOtpBtn');
+	const otpBlock = document.getElementById('otpVerifyBlock');
+	const otpInput = document.getElementById('otpInput');
+	const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+	const otpError = document.getElementById('otpError');
+	const otpMessage = document.getElementById('otpMessage');
+	const signupForm = document.getElementById('signupForm');
+	const hiddenPhoneNumber = document.getElementById('hiddenPhoneNumber');
+
+	// CSRF helper: prefer hidden csrf input, fallback to cookie
+	function getCookie(name) { const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift(); }
+	const csrfToken = (document.querySelector("input[name='csrfmiddlewaretoken']") || {}).value || getCookie('csrftoken');
+
+	let otpVerified = false;
+	function validateEmail(email){ return /\S+@\S+\.\S+/.test(email); }
+	function validateForm(){
+		if (!registerBtn) return;
+		// show tooltip until OTP verified
+		if (!otpVerified){
+			registerBtn.disabled = true;
+			if (registerTooltip) registerTooltip.style.visibility = 'visible';
+			return;
+		}
+		if (!validateEmail(emailInput.value.trim())){ registerBtn.disabled = true; if (registerTooltip) registerTooltip.style.visibility = 'hidden'; return; }
+		if (pass1.value && pass2.value && pass1.value === pass2.value){ passwordError.textContent=''; registerBtn.disabled=false; if (registerTooltip) registerTooltip.style.visibility = 'hidden'; }
+		else { passwordError.textContent='Passwords do not match'; registerBtn.disabled=true; if (registerTooltip) registerTooltip.style.visibility = 'hidden'; }
+	  }
+
+	document.querySelectorAll('.input-group-text .mdi').forEach(function(el){
+		el.addEventListener('click', function(){
+			const input = this.closest('.input-group').querySelector('input');
+			if (!input) return;
+			input.type = input.type === 'password' ? 'text' : 'password';
+		});
+	});
+
+	if (phoneInput){ phoneInput.addEventListener('input', function(){ this.value = this.value.replace(/\D/g,''); }); }
+	if (emailInput) emailInput.addEventListener('input', validateForm);
+	if (pass1) pass1.addEventListener('input', validateForm);
+	if (pass2) pass2.addEventListener('input', validateForm);
+
+	if (signupForm){ signupForm.addEventListener('submit', function(){ let phone = phoneInput.value.trim(); if (phone.startsWith('0')) phone = phone.substring(1); hiddenPhoneNumber.value = '+'+countryCode.value+phone; }); }
+
+	// Named handler so we can attach directly or via delegation
+	function sendOtpHandler(e){
+		try {
+			console.debug('signup.js: sendOtpHandler invoked');
+			if (!phoneInput) { console.warn('signup.js: phoneInput not found'); return; }
+			let phone = phoneInput.value.trim();
+			console.debug('signup.js: phone raw', phone);
+			if (!phone){ otpMessage.innerHTML='<div class="alert alert-danger">Enter phone number</div>'; return; }
+			if (phone.startsWith('0')) phone=phone.substring(1);
+			const fullNumber = countryCode ? (countryCode.value+phone) : phone;
+			console.debug('signup.js: fullNumber', fullNumber);
+			if (sendOtpBtn){ sendOtpBtn.disabled=true; sendOtpBtn.textContent='Sending...'; }
+			fetch('{% url "accounts:send_otp" %}', {method:'POST', credentials: 'same-origin', headers:{'Content-Type':'application/json','X-CSRFToken': csrfToken || ''}, body: JSON.stringify({phone: fullNumber})})
+				.then(r=>{ console.debug('signup.js: send_otp HTTP', r.status); return r.json(); })
+				.then(data=>{
+					console.debug('signup.js: send_otp response', data);
+					if (data.success){
+						if (otpBlock) otpBlock.style.display='block';
+						otpMessage.innerHTML='<div class="alert alert-success">OTP sent</div>';
+						otpVerified=false;
+						let countdown=300; const iv=setInterval(()=>{ countdown--; if (sendOtpBtn) sendOtpBtn.textContent=`Resend in ${countdown}s`; if(countdown<=0){ clearInterval(iv); if (sendOtpBtn){ sendOtpBtn.disabled=false; sendOtpBtn.textContent='Resend OTP'; } } },1000);
+					} else {
+						otpMessage.innerHTML='<div class="alert alert-danger">'+data.error+'</div>';
+						if (sendOtpBtn){ sendOtpBtn.disabled=false; sendOtpBtn.textContent='Send OTP'; }
+					}
+				})
+				.catch(e=>{ console.error('signup.js: send_otp error', e); otpMessage.innerHTML='<div class="alert alert-danger">Failed to send OTP</div>'; if (sendOtpBtn){ sendOtpBtn.disabled=false; sendOtpBtn.textContent='Send OTP'; } });
+		} catch(err){ console.error('signup.js: unexpected', err); }
+	}
+
+	if (sendOtpBtn){ sendOtpBtn.addEventListener('click', sendOtpHandler); }
+	// Delegated fallback: catch clicks if button wasn't present at binding time
+	document.addEventListener('click', function(e){
+		const target = e.target || e.srcElement;
+		if (!target) return;
+		if (target.id === 'sendOtpBtn' || (target.closest && target.closest('#sendOtpBtn'))){
+			e.preventDefault();
+			sendOtpHandler(e);
+		}
+	});
+
+	 if (verifyOtpBtn){ verifyOtpBtn.addEventListener('click', function(e){ e.preventDefault(); const fullNumber = countryCode.value + phoneInput.value.trim(); fetch('{% url "accounts:verify_otp" %}', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': csrfToken || ''}, body: JSON.stringify({otp: otpInput.value.trim(), phone: fullNumber})}).then(r=>r.json()).then(data=>{ if (data.success){ otpError.textContent=''; otpMessage.innerHTML='<div class="alert alert-success">OTP verified!</div>'; otpVerified=true; validateForm(); } else { otpError.textContent = data.error || 'Invalid OTP'; otpVerified=false; registerBtn.disabled=true; } }).catch(e=>{ console.error(e); otpError.textContent='Failed to verify OTP'; otpVerified=false; registerBtn.disabled=true; }); }); }
+
+	validateForm();
+});
+</script>
+{% endblock %}
