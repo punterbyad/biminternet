@@ -20,8 +20,7 @@ BIM INTERNET SERVICES is a comprehensive platform for managing MikroTik routers 
 ## Screenshots
 
 <!-- Add screenshots here -->
-![Dashboard](screenshots/dashboard.png)
-![Router Management](screenshots/router-management.png)
+![IMG-20250428-WA0000](https://github.com/user-attachments/assets/46694b6f-2aa9-4021-8a0f-031790d9d3ce)
 
 ---
 
@@ -41,9 +40,8 @@ BIM INTERNET SERVICES is a comprehensive platform for managing MikroTik routers 
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
-   Configure your environment variables in a .env file (do not commit .env):
 
-4 Configure your environment variables in a .env file (do not commit .env):
+4. Configure your environment variables in a .env file (do not commit .env):
    ```bash
    SECRET_KEY=your-secret-key
    DATABASE_URL=your-database-url
