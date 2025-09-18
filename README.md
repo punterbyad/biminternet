@@ -11,7 +11,8 @@ BIM INTERNET SERVICES is a comprehensive platform for managing MikroTik routers 
 - **Router Management:** Configure and manage multiple MikroTik routers remotely.  
 - **Packages & Vouchers:** Create, manage, and track internet packages and vouchers.  
 - **KYC (Know Your Customer):** Verify users before granting network access.  
-- **Access Managers:** Manage users’ online sessions and access permissions.  
+- **Access Managers:** Manage users’ online sessions and access permissions.
+- **Transaction:** Consolidate all your collections, and withdraw your earnings at any time. 
 - **VPN Integration:** Secure network access with built-in VPN management.  
 - **Analytics Dashboard:** Real-time monitoring and reporting for all routers and users.
 
