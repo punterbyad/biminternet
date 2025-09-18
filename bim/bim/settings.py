@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r5_nl2w==(cn$r^=g3x+b^pccdzfp&yxoy9!ns62dh%rip(*ti'
+SECRET_KEY = 'django-insecure'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -136,54 +136,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Use the custom user model defined in the accounts app
 AUTH_USER_MODEL = 'accounts.User'
-
-# SMTP for emails
-EMAIL_HOST='smtp.gmail.com'
-EMAIL_PORT=587
-EMAIL_HOST_USER='timkav02'
-EMAIL_HOST_PASSWORD='hrmn omhv cyvj winw'
-DEFAULT_FROM_EMAIL='support@smartwireapp.com'
-
-EGOSMS_USER='bilq666'
-EGOSMS_PASS='Ky@nd1g@'
-
-# Sumsub & Veriff placeholders
-SUMSUB_API_URL='https://api.sumsub.com'
-SUMSUB_APP_TOKEN='sbx:12pq08aIiWCK8fpvobgE5FNI.KyWuWH82NGsyqQ7vS1134J1Ehxhx9rIu'
-SUMSUB_SECRET_KEY='GCg0BYYIYlJyR85peBVZqveeM5Vvvw2l'
-#SUMSUB_WEBHOOK_SECRET=
-
-# Session behaviour: enable optional per-session idle expiry.
-# When enabled, active requests refresh the expiry window. We set sensible
-# application defaults but they can be overridden in production settings.
-SESSION_SAVE_EVERY_REQUEST = True
-# Web idle timeout (seconds) — auto-logout after this many seconds of inactivity
-WEB_SESSION_IDLE_TIMEOUT = 20 * 60  # 20 minutes
-# Mobile (or "remember me") session lifetime (seconds) — long-lived by default
-MOBILE_SESSION_TIMEOUT = 60 * 60 * 24 * 30 * 3  # ~3 months (90 days)
-
-# When True, any request with JSON payload (Content-Type: application/json)
-# must include the X-Mobile-Client: 1 header. This is intended for API enforcement
-# when mobile apps are expected to identify themselves. Enable with caution.
-REQUIRE_MOBILE_HEADER_FOR_JSON = True
-
-# Paths that are exempt from the X-Mobile-Client JSON header requirement.
-# Router management endpoints and other internal app-to-device calls should be added here.
-REQUIRE_MOBILE_HEADER_JSON_EXEMPT_PREFIXES = [
-    '/routers/',  # router management / device calls (internal)
-]
-
-MOMO_SUBSCRIPTION_KEY = '68847df1600d4e70a2e78dd20e37080f'
-MOMO_CALLBACK_URL = 'https://staging.biminternet.com/api/momo/callback'
-
-FLW_PUBLIC_KEY = 'FLWPUBK-63cd56385c74cc6020689f531c8afeb5-X'
-FLW_SECRET_KEY = 'FLWSECK-68e39fef9c03dca997701d43d483f816-189f977b1abvt-X'
-FLW_ENCRYPTION_KEY = '68e39fef9c031e8cb23efce7'
-
-SILICON_ENCRYPTION_KEY = 'H1CqVog82324041ec46286e345e47b4a9c19b2b1'
-SILICON_SECRET_KEY = '9msvidU81PNHY0oDETAaQLeVWrF4XxB5'
-
-PAYTOTA_BASEURL = 'https://gate.paytota.com'
-PAYTOTA_BRANDID = '1768776a-9843-49fc-9af7-b7f84b240536'
-PAYTOTA_SECRET_KEY = 'm72j_ASXR5yn2qQ2TkhTFBVtdFwx2lW2V1TfDocFd3rKTPCATFBNimDbPyEjwoOZNKVCCA4BRbkZwj5TucQSfQ=='
-
